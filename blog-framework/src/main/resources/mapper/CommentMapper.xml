@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hao.mapper.CommentMapper">
+
+    <select id="selectRootList" parameterType="Long" resultType="CommentVO">
+    SELECT
+        c.id,
+        c.root_id,
+        c.parent_id,
+        c.content,
+        c.ip_location,
+        c.create_time AS createTime,
+        c.create_by AS senderId,
+        u1.nick_name AS sender_nickName,
+        u1.avatar AS sender_avatar
+    FROM blog_comment c
+    LEFT JOIN sys_user u1
+    ON u1.id = c.create_by
+    WHERE c.article_id = #{blogId} AND c.parent_id = -1;
+</select>
+    <select id="selectChildList" resultType="com.hao.domain.vo.CommentVO">
+
+        SELECT
+        c.id,
+        c.root_id,
+        c.parent_id,
+        c.content,
+        c.ip_location,
+        c.create_time AS createTime,
+        c.create_by AS senderId,
+        u1.nick_name AS sender_nickName,
+        u1.avatar AS sender_avatar,
+        c.parent_user_id AS parent_userId,
+        u2.nick_name AS parent_user_nickName,
+        u2.avatar AS parent_user_avatar
+    FROM blog_comment c
+    LEFT JOIN sys_user u1 ON u1.id = c.create_by
+    LEFT JOIN sys_user u2 ON u2.id = c.parent_user_id
+    WHERE c.article_id = #{blogId} AND c.parent_id != -1;
+
+    </select>
+
+</mapper>
