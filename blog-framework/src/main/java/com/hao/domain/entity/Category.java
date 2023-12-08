@@ -24,7 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("blog_category")
+@TableName("category")
 public class Category {
     @TableId
     private Long id;

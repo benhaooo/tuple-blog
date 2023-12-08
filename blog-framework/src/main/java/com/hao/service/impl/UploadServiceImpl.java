@@ -9,8 +9,12 @@ import com.hao.exception.SystemException;
 import com.hao.service.UploadService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -43,7 +47,30 @@ public class UploadServiceImpl implements UploadService {
         String filePath = new StringBuilder().append(datePath).append(uuid).append(".").append(suffix).toString();
 
 
-        String url = uploadOss(img, filePath);
+        String url = null;
+        try {
+            url = uploadOss(img.getInputStream(), filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResponseResult.okResult(url);
+    }
+
+
+    private final String IMG_URL = "https://imgapi.xl0408.top/index.php";
+
+
+    /**
+     * 获取随机图片地址
+     * @return
+     */
+    @Override
+    public ResponseResult uploadRandomImg() {
+        RestTemplate restTemplate = new RestTemplate();
+        byte[] imageBytes = restTemplate.getForObject(IMG_URL, byte[].class);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+        String filePath = "random/" + UUID.randomUUID().toString().replaceAll("-", "") + ".jpg";
+        String url = uploadOss(inputStream, filePath);
         return ResponseResult.okResult(url);
     }
 
@@ -56,15 +83,15 @@ public class UploadServiceImpl implements UploadService {
     @Value("${oss.bucketName}")
     private String bucketName;
 
-    private String ALI_DOMAIN = "https://benhao-test.oss-cn-guangzhou.aliyuncs.com/";
+    private final String ALI_DOMAIN = "https://benhao-test.oss-cn-guangzhou.aliyuncs.com/";
 
-    private String uploadOss(MultipartFile imgFile, String filePath) {
+    private String uploadOss(InputStream in, String filePath) {
 
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            PutObjectResult putObjectResult = ossClient.putObject(bucketName, filePath, imgFile.getInputStream());
+            PutObjectResult putObjectResult = ossClient.putObject(bucketName, filePath, in);
             return ALI_DOMAIN + filePath;
         } catch (Exception e) {
             throw new SystemException(AppHttpCodeEnum.FILE_UPLOAD_ERROR);
@@ -74,4 +101,5 @@ public class UploadServiceImpl implements UploadService {
             }
         }
     }
+
 }

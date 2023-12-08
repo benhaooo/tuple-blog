@@ -21,7 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("blog_comment")
+@TableName("comment")
 public class Comment  {
     @TableId
     private Long id;

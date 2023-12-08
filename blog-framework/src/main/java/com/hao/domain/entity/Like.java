@@ -16,7 +16,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("blog_like")
+@TableName("like")
 public class Like {
     private Long article_id;
     @TableField(fill = FieldFill.INSERT)

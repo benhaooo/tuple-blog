@@ -26,7 +26,7 @@ mybatis-plus:
       id-type: auto
   type-aliases-package: com.hao.domain
 oss:
-  accessKeyId: LTAI5t9qt7kuAfVeLgE3p64u
-  accessKeySecret: TH22KG6pGRNQDDlSpeRqsL0Zg6OkEw
+  accessKeyId: LTAI5tDcgpiAiEAoHGePskGe
+  accessKeySecret: SjXdxiDNazt7kXU9jVzTGduiW6U3Lx
   endpoint: https://oss-cn-guangzhou.aliyuncs.com
   bucketName: benhao-test

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.hao.mapper.ArticleTagMapper">
     <insert id="insertList">
-        INSERT INTO blog_article_tag ( article_id, tag_id ) VALUES
+        INSERT INTO article_tag ( article_id, tag_id ) VALUES
         <foreach collection="tags" item="tag_id" separator=",">
             (#{article_id},#{tag_id})
         </foreach>
@@ -11,21 +11,21 @@
 
     <delete id="deleteByTagId">
         DELETE FROM
-            blog_article_tag
+            article_tag
         WHERE
             tag_id = #{tagId}
     </delete>
 
     <delete id="deleteByArticleId">
         DELETE FROM
-            blog_article_tag
+            article_tag
         WHERE
             article_id = #{article_id}
     </delete>
 
     <select id="tagsIdByArticleId" resultType="integer">
         SELECT DISTINCT tag_id
-        FROM blog_article_tag
+        FROM article_tag
         WHERE article_id = #{article_id}
     </select>
 

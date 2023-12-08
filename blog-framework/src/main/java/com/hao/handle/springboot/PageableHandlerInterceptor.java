@@ -13,6 +13,7 @@ import static com.hao.constants.SystemConstants.*;
 public class PageableHandlerInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+//       获取分页参数
         String currentPage = request.getParameter(CURRENT);
         String pageSize = Optional.ofNullable(request.getParameter(SIZE)).orElse(DEFAULT_SIZE);
         if (currentPage != null && currentPage != "") {

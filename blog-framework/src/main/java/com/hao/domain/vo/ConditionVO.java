@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConditionVO {
-    private Long current;
-    private Long size;
     private Long categoryId;
     private Long tagId;
     private String keyword;

@@ -30,7 +30,7 @@ public class SecurityUtils {
             userId = getLoginUser().getUser().getId();
         } catch (Exception e) {
 //            e.printStackTrace();
-            userId = 1L;//默认id为1（管理员）
+//            userId = 1L;//默认id为1（管理员）
         }
         return userId;
     }

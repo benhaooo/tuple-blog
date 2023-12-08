@@ -1,7 +1,6 @@
 package com.hao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.hao.domain.dto.ArticleBackDTO;
 import com.hao.domain.dto.ArticleDTO;
 import com.hao.domain.entity.Article;
 import com.hao.domain.vo.ArticlePreviewDTO;
@@ -21,12 +20,12 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     List<ArticlePreviewDTO> listArticleByCondition(@Param("current") Long current, @Param("size") Long size, @Param("condition") ConditionVO condition);
 
-    Long countArticle(ConditionVO condition);
+    Long countArticleByCondition(@Param("current") Long current, @Param("size") Long size, @Param("condition") ConditionVO condition);
 
 
-//    {id={id=#,vieCount=#}},{...}
+    //    {id={id=#,vieCount=#}},{...}
 //    键为String
     @MapKey("id")
-    List<Map<Long,Long>> listViewCount();
+    List<Map<Long, Long>> listViewCount();
 
 }

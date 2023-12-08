@@ -10,9 +10,8 @@
             c.create_time,
             COUNT(a.id) AS articleCount
         FROM
-            blog_category c
-        JOIN ( SELECT id,category_id FROM blog_article WHERE del_flag = 0 ) a ON c.id = a.category_id
-        WHERE c.del_flag = 0
+            category c
+        JOIN ( SELECT id,category_id FROM article WHERE del_flag = 0 ) a ON c.id = a.category_id
         GROUP BY c.id
         
     </select>

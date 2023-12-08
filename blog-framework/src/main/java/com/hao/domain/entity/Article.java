@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("blog_article")
+@TableName("article")
 public class Article  {
     @TableId
     private Long id;
@@ -32,12 +32,8 @@ public class Article  {
     private String title;
     //文章内容
     private String content;
-    //文章摘要
-//    private String summary;
     //所属分类id
     private Long categoryId;
-    @TableField(exist = false)
-    private String categoryName;
     //缩略图
     private String thumbnail;
     //是否置顶（0否，1是）
@@ -52,6 +48,8 @@ public class Article  {
     private String originalUrl;
     //访问量
     private Long viewCount;
+    //点赞量
+    private Long likeCount;
     @TableField(fill = FieldFill.INSERT)
     private Long createBy;
     @TableField(fill = FieldFill.INSERT)

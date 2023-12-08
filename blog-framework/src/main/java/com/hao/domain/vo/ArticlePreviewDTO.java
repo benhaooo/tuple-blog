@@ -17,8 +17,16 @@ public class ArticlePreviewDTO {
     private Long id;
     //标题
     private String title;
+
+    private String content;
     //缩略图
     private String thumbnail;
+
+    private Long viewCount;
+
+    private Long likeCount;
+
+    private Long commentCount;
 
     private Date createTime;
 
@@ -27,6 +35,6 @@ public class ArticlePreviewDTO {
     //分类名
     private String categoryName;
     //标签集合
-    private List<TagVO> tagVOList;
+    private List<TagVO> tags;
 
 }

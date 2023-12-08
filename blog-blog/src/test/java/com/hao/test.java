@@ -10,16 +10,23 @@ import com.hao.mapper.ArticleMapper;
 import com.hao.mapper.RoleMapper;
 import com.hao.mapper.TagMapper;
 import com.hao.mapper.UserInfoMapper;
-import com.hao.service.ArticleService;
-import com.hao.service.CategoryService;
-import com.hao.service.CommentService;
-import com.hao.service.UserService;
+import com.hao.service.*;
 import com.hao.service.impl.ArticleServiceImpl;
+import com.hao.service.impl.UploadServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -61,10 +68,6 @@ public class test {
 
     @Test
     public void testListArticle() {
-        int pageNum = 1, pageSize = 10;
-        Long category = null;
-        ResponseResult responseResult = articleService.articleList(pageNum, pageSize, category);
-        System.out.println(responseResult.getData());
 
     }
 
@@ -116,7 +119,7 @@ public class test {
 
     @Test
     public void articleTest() {
-        System.out.println(articleService.listArticle(new ConditionVO()));
+//        System.out.println(articleService.listArticle(new ConditionVO()));
     }
 
     @Autowired
@@ -135,6 +138,36 @@ public class test {
     @Test
     public void userInfoTest() {
 //        System.out.println(userService.userInfoById);
+
+    }
+
+
+
+    @Autowired
+    private UploadServiceImpl uploadService;
+    @Test
+    public void urltest() {
+//        ResponseResult responseResult = uploadService.uploadRandomImg();
+//        System.out.println(responseResult.getData());
+//        RestTemplate restTemplate = new RestTemplate();
+//        byte[] imageBytes = restTemplate.getForObject("https://imgapi.xl0408.top/index.php", byte[].class);
+//        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+//        System.out.println(contentType);
+//        uploadService.uploadOss(inputStream,"teseetttt.jpg");
+
+//        File tempFile = File.createTempFile("temp", null);
+//        Files.write(tempFile.toPath(), imageBytes);
+//
+//        MultipartFile multipartFile = new MockMultipartFile(
+//                tempFile.getName(),
+//                tempFile.getName(),
+//                null,
+//                new FileInputStream(tempFile)
+//        );
+//
+//    // 可选择：将临时文件删除
+//        tempFile.delete();
+//        System.out.println(multipartFile);
 
     }
 }

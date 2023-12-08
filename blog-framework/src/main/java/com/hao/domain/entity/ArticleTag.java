@@ -21,7 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("blog_article_tag")
+@TableName("article_tag")
 public class ArticleTag {
     //文章id
     private Long articleId;

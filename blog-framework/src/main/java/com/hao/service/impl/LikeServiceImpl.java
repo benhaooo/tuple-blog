@@ -18,8 +18,6 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
     @Autowired
     private LikeMapper likeMapper;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
 
 //    toggle

@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+//文章详情
 public class ArticleDTO {
     private Long id;
     private String title;

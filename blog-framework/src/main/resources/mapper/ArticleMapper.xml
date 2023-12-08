@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.hao.mapper.ArticleMapper">
-    <resultMap id="articleHomeResultMap" type="ArticleHomeDTO">
-        <id column="id" property="id"/>
-        <result column="title" property="title"></result>
-        <result column="content" property="content"></result>
-        <result column="thumbnail" property="thumbnail"></result>
-        <result column="is_top" property="isTop"></result>
-        <result column="create_time" property="createTime"></result>
-        <result column="category_id" property="categoryId"></result>
-        <result column="c_name" property="categoryName"></result>
-        <collection property="tagDTOList" ofType="TagDTO">
-            <id column="t_id" property="id"/>
-            <result column="t_name" property="name"></result>
-        </collection>
-    </resultMap>
     <resultMap id="articleResultMap" type="ArticleDTO">
         <id column="id" property="id"/>
         <result column="title" property="title"></result>
@@ -40,50 +26,6 @@
     </resultMap>
 
 
-    <resultMap id="listArticleByConditionMap" type="ArticlePreviewDTO">
-        <id column="id" property="id"/>
-        <result column="title" property="title"></result>
-        <result column="thumbnail" property="thumbnail"></result>
-        <result column="create_time" property="createTime"></result>
-        <result column="category_id" property="categoryId"></result>
-        <result column="c_name" property="categoryName"></result>
-        <collection property="tagVOList" ofType="TagVO">
-            <id column="t_id" property="id"/>
-            <result column="t_name" property="name"></result>
-        </collection>
-    </resultMap>
-
-
-    <select id="articleList" resultMap="articleHomeResultMap,count">
-        SELECT SQL_CALC_FOUND_ROWS
-        a.id,
-        a.title,
-        a.content,
-        a.thumbnail,
-        a.is_top,
-        a.create_time,
-        a.category_id,
-        c.name AS c_name
-        FROM
-        (
-        select *
-        from blog_article
-        <where>
-            <if test="categoryId != null">
-                category_id=#{categoryId}
-            </if>
-            and del_flag=0
-            and status=1
-        </where>
-
-        ORDER BY
-        is_top DESC,
-        id DESC
-        LIMIT #{current},#{size}
-        ) a
-        JOIN blog_category c ON a.category_id = c.id;
-        SELECT FOUND_ROWS() AS total;
-    </select>
     <select id="getArticleById" resultMap="articleResultMap">
 
         SELECT
@@ -104,102 +46,118 @@
             t.name AS t_name,
             t.color AS t_color
         FROM
-            blog_article a
-            JOIN blog_category c ON a.category_id = c.id
-            JOIN blog_article_tag at ON a.id = at.article_id
-            JOIN blog_tag t ON at.tag_id = t.id
+            article a
+            JOIN category c ON a.category_id = c.id
+            LEFT JOIN article_tag at ON a.id = at.article_id
+            LEFT JOIN blog_tag t ON at.tag_id = t.id
         where
             a.id = #{id}
             AND a.del_flag = 0
             AND a.status = 1
 
     </select>
+
+    <!--GROUP_CONCAT函数将标签ID连接成一个字符串。然后在主查询中使用FIND_IN_SET函数来将这些标签ID拆分开-->
     <select id="listArticleByCondition" resultMap="listArticleByConditionMap">
         SELECT
         a.id,
         a.title,
+        a.content,
+        a.view_count,
+        a.like_count,
         a.thumbnail,
         a.create_time,
         a.category_id,
         c.name AS c_name,
         t.id AS t_id,
-        t.name AS t_name
+        t.name AS t_name,
+        IFNULL(COUNT(m.id), 0) AS m_count
         FROM
         (
         SELECT
         id,
         title,
+        SUBSTRING(content, 1, 100) AS content,
         thumbnail,
+        view_count,
+        like_count,
         create_time,
         category_id
         FROM
-        blog_article
-        <where>
-            del_flag = 0
-            <if test="condition.categoryId != null">
-                AND category_id = #{condition.categoryId}
-            </if>
-            <if test="condition.tagId != null">
-                AND id IN(
-                SELECT
-                article_id
-                FROM
-                blog_article_tag
-                WHERE
-                tag_id = #{condition.tagId}
-                )
-            </if>
-            <if test="condition.keyword != null">
-                AND title like concat('%', #{condition.keyword}, '%')
-            </if>
-        </where>
-        ORDER BY id DESC
-        LIMIT #{current} , #{size}
+        article
+        WHERE
+        del_flag = 0
+        <if test="condition.categoryId != null">
+            AND category_id = #{condition.categoryId}
+        </if>
+        <if test="condition.tagId != null">
+            AND id IN (
+            SELECT article_id
+            FROM article_tag
+            WHERE tag_id = #{condition.tagId}
+            )
+        </if>
+        <if test="condition.keyword != null">
+            AND title LIKE concat('%', #{condition.keyword}, '%')
+        </if>
+        LIMIT #{current}, #{size}
         ) a
-        JOIN blog_category c ON a.category_id = c.id
-        JOIN blog_article_tag at ON a.id = at.article_id
-        JOIN blog_tag t ON at.tag_id = t.id
+        JOIN category c ON a.category_id = c.id
+        LEFT JOIN (
+        SELECT article_id, GROUP_CONCAT(tag_id) AS tag_ids
+        FROM article_tag
+        GROUP BY article_id
+        ) at ON a.id = at.article_id
+        LEFT JOIN blog_tag t ON FIND_IN_SET(t.id, at.tag_ids)
+        LEFT JOIN comment m ON a.id = m.article_id
+        GROUP BY a.id, t.id
 
     </select>
-    <select id="countArticle" resultType="java.lang.Long">
+
+    <resultMap id="listArticleByConditionMap" type="ArticlePreviewDTO">
+        <id column="id" property="id"/>
+        <result column="title" property="title"></result>
+        <result column="thumbnail" property="thumbnail"></result>
+        <result column="content" property="content"></result>
+        <result column="create_time" property="createTime"></result>
+        <result column="view_count" property="viewCount"></result>
+        <result column="like_count" property="likeCount"></result>
+        <result column="m_count" property="commentCount"></result>
+        <result column="category_id" property="categoryId"></result>
+        <result column="c_name" property="categoryName"></result>
+        <collection property="tags" ofType="TagVO">
+            <id column="t_id" property="id"/>
+            <result column="t_name" property="name"></result>
+        </collection>
+    </resultMap>
+
+
+    <select id="countArticleByCondition" resultType="java.lang.Long">
         SELECT
-        COUNT (a.id)
+        COUNT(*)
         FROM
-        (
-        SELECT
-        *
-        FROM
-        blog_article
-        <where>
-            del_flag = 0
-            <if test="condition.categoryId != null">
-                AND category_id = #{condition.categoryId}
-            </if>
-            <if test="condition.tagId != null">
-                AND id IN(
-                SELECT
-                article_id
-                FROM
-                blog_article_tag
-                WHERE
-                tag_id = #{condition.tagId}
-                )
-            </if>
-            <if test="condition.keyword != null">
-                AND title like "%"#{condition.keyword}"%"
-            </if>
-        </where>
-        ) a
-        JOIN blog_category c ON a.category_id = c.id
-        JOIN blog_article_tag at ON a.id = at.article_id
-        JOIN blog_tag t ON at.tag_id = t.id
+        article
+        WHERE
+        del_flag = 0
+        <if test="condition.categoryId != null">
+            AND category_id = #{condition.categoryId}
+        </if>
+        <if test="condition.tagId != null">
+            AND id IN (
+            SELECT article_id
+            FROM article_tag
+            WHERE tag_id = #{condition.tagId}
+            )
+        </if>
+        <if test="condition.keyword != null">
+            AND title LIKE concat('%', #{condition.keyword}, '%')
+        </if>
     </select>
     <select id="listViewCount" resultType="java.util.Map">
         SELECT
             id,
             view_count
-        FROM blog_article
+        FROM article
         WHERE del_flag = 0
-
     </select>
 </mapper>

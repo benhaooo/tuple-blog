@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -49,58 +50,59 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Autowired
     private LikeMapper likeMapper;
 
-    @Override
-    public ResponseResult articleList(Integer pageNum, Integer pageSize, Long categoryId) {
-        List<Object> objList = articleMapper.articleList((pageNum - 1) * pageSize, pageSize, categoryId);
-        return ResponseResult.okResult(new PageVo((List<ArticleHomeDTO>) objList.get(0), ((List<Long>) objList.get(1)).get(0)));
 
-    }
-
-
+    /**
+     * 添加文章
+     *
+     * @param articleVo
+     * @return
+     */
     @Override
     public ResponseResult saveOrUpdateArticle(ArticleVo articleVo) {
         Article article = BeanCopyUtils.copyBean(articleVo, Article.class);
-//        保存分类
+        //保存分类
         Category category = categoryService.getOne(new LambdaQueryWrapper<Category>().eq(Category::getName, articleVo.getCategoryName()));
         if (Objects.isNull(category) && !ArticleStatusEnum.DRAFT.getStatus().equals(articleVo.getStatus())) {//分类不存在且文章不为草稿
-            category = Category.builder().name(articleVo.getCategoryName()).build();//Builder生成一个对象
+            category = Category.builder().name(articleVo.getCategoryName()).build();
             categoryService.save(category);
         }
 
-//        保存文章
-        article.setCategoryId(category.getId());//?
+        //保存文章
+        article.setCategoryId(category.getId());
         this.saveOrUpdate(article);
 
-//        保存tag
+        //保存tag
         Long articleId = article.getId();
         //先删除关联表中所有文章的关联关系
         articleTagService.remove(new LambdaQueryWrapper<ArticleTag>().eq(ArticleTag::getArticleId, articleId));
-        List<String> tagNameList = articleVo.getTagNameList();
+        List<String> tagNameList = new ArrayList<>(articleVo.getTagNameList());
 
         if (!CollectionUtils.isEmpty(tagNameList)) {
-            //查找已存在数据库中标签
-            List<Tag> existTagList = tagService.list(new LambdaQueryWrapper<Tag>().in(Tag::getName, tagNameList));
-            //获取标签名
-            List<String> existTagNameList = existTagList.stream().map(Tag::getName).collect(Collectors.toList());
-            //获取标签id
-            List<Long> existTagIdList = existTagList.stream().map(Tag::getId).collect(Collectors.toList());
-            //根据标签名将已存在的标签名从文章标签列表中去除
-            tagNameList.removeAll(existTagNameList);
-            if (!CollectionUtils.isEmpty(tagNameList)) {
-                //根据标签名生成对象
-                List<Tag> tagList = tagNameList.stream().map(tagName -> Tag.builder().name(tagName).build()).collect(Collectors.toList());
-                //保存到数据库
-                tagService.saveBatch(tagList);
-                //合并原存在的标签id和后添加的标签id
-                existTagIdList.addAll(tagList.stream().map(Tag::getId).collect(Collectors.toList()));
-            }
-            //生成关联表对象
-            List<ArticleTag> articleTagList = existTagIdList.stream().map(tagId -> ArticleTag.builder().articleId(articleId).tagId(tagId).build()).collect(Collectors.toList());
-            articleTagService.saveBatch(articleTagList);
+            saveOrUpdateTags(articleId, tagNameList);
         }
         return ResponseResult.okResult();
     }
 
+    private void saveOrUpdateTags(Long articleId, List<String> tagNameList) {
+        //查找已存在数据库中标签
+        List<Tag> existTagList = tagService.list(new LambdaQueryWrapper<Tag>().in(Tag::getName, tagNameList));
+        //获取标签名
+        List<String> existTagNameList = existTagList.stream().map(Tag::getName).collect(Collectors.toList());
+        //获取标签id
+        List<Long> existTagIdList = existTagList.stream().map(Tag::getId).collect(Collectors.toList());
+        //根据标签名将已存在的标签名从文章标签列表中去除
+        tagNameList.removeAll(existTagNameList);
+        if (!CollectionUtils.isEmpty(tagNameList)) {
+            //根据标签名生成对象
+            List<Tag> tagList = tagNameList.stream().map(tagName -> Tag.builder().name(tagName).build()).collect(Collectors.toList());
+            tagService.saveBatch(tagList);
+            //合并原存在的标签id和后添加的标签id
+            existTagIdList.addAll(tagList.stream().map(Tag::getId).collect(Collectors.toList()));
+            //生成关联表对象
+            List<ArticleTag> articleTagList = existTagIdList.stream().map(tagId -> ArticleTag.builder().articleId(articleId).tagId(tagId).build()).collect(Collectors.toList());
+            articleTagService.saveBatch(articleTagList);
+        }
+    }
 
     //    根据id查询文章
     @Override
@@ -113,31 +115,50 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleDTO.setViewCount(redisCache.incrementMapV(SystemConstants.REDIS_ARTICLE_VIEW_COUNT, String.valueOf(id), 1l));
         //当前用户是否点赞
         Long userId = SecurityUtils.getUserId();
-        LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticle_id, id).eq(Like::getCreateBy, userId);
-        if (likeMapper.selectCount(eq) != 0) {
-            articleDTO.setIsLiked(true);
+        if(Objects.nonNull(userId)){
+            LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticle_id, id).eq(Like::getCreateBy, userId);
+            if (likeMapper.selectCount(eq) != 0) {
+                articleDTO.setIsLiked(true);
+            }
         }
         return ResponseResult.okResult(articleDTO);
     }
 
-
-    //后台文章列表
     @Override
-    public ResponseResult listArticle(ConditionVO condition) {
-//        查询数据
-        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
-//        查询总数
-        Long count = articleMapper.countArticle(condition);
+    public ResponseResult getAdminArticleById(Long id) {
+        Article article = articleMapper.selectById(id);
+        return ResponseResult.okResult(article);
+    }
+
+
+    /**
+     * 后台文章列表
+     *
+     * @param condition
+     * @return
+     */
+    @Override
+    public ResponseResult listAdminArticleByCondition(ConditionVO condition) {
+        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
+        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
         PageVo pageVo = new PageVo(articleList, count);
 
         return ResponseResult.okResult(pageVo);
     }
 
 
+    /**
+     * 条件查询
+     *
+     * @param condition
+     * @return
+     */
     @Override
     public ResponseResult listArticleByCondition(ConditionVO condition) {
-        List<ArticlePreviewDTO> articlePreviewDTOList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
-        return ResponseResult.okResult(articlePreviewDTOList);
+        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
+        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
+        PageVo pageVo = new PageVo(articleList, count);
+        return ResponseResult.okResult(pageVo);
     }
 
     @Override
@@ -149,39 +170,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         );
         List<ArticleArchiveVO> articleArchiveVOList = BeanCopyUtils.copyBeanList(archivePage.getRecords(), ArticleArchiveVO.class);
         return ResponseResult.okResult(PageVo.builder().rows(articleArchiveVOList).total(page.getTotal()).build());
-    }
-
-
-    @Override
-    public ResponseResult insertArticle(ArticleBackDTO articleBackDTO) {
-        Article article = BeanCopyUtils.copyBean(articleBackDTO, Article.class);
-//        article.setCategoryId(18L);
-        articleMapper.insert(article);
-//        articleTagMapper.insertList(article.getId(),articleBackDTO.getTags());
-        return ResponseResult.okResult();
-    }
-
-    @Override
-    public ResponseResult deleteArticle(Long id) {
-        articleMapper.deleteById(id);
-        return ResponseResult.okResult();
-    }
-
-    @Override
-    public ResponseResult getArticle(Long id) {
-        Article article = articleMapper.selectById(id);
-        ArticleBackDTO articleBackDTO = BeanCopyUtils.copyBean(article, ArticleBackDTO.class);
-//        articleBackDTO.setTags(articleTagMapper.tagsIdByArticleId(id));
-        return ResponseResult.okResult(articleBackDTO);
-    }
-
-    @Override
-    public ResponseResult updateArticle(ArticleBackDTO articleBackDTO) {
-        Article article = BeanCopyUtils.copyBean(articleBackDTO, Article.class);
-        articleMapper.updateById(article);
-//        articleTagMapper.deleteByArticleId(articleBackDTO.getId());
-//        articleTagMapper.insertList(articleBackDTO.getId(),articleBackDTO.getTags().stream().distinct().collect(Collectors.toList()));
-        return ResponseResult.okResult();
     }
 
 
