@@ -11,6 +11,8 @@
     <modules>
         <module>blog-framework</module>
         <module>blog-blog</module>
+        <module>blog-websocket</module>
+        <module>blog-connect</module>
     </modules>
 
     <!--    统一配置-->
