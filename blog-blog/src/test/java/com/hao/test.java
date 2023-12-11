@@ -3,32 +3,33 @@ package com.hao;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.PutObjectResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hao.chatgpt.common.Constants;
+import com.hao.chatgpt.domain.chat.ChatCompletionRequest;
+import com.hao.chatgpt.domain.chat.ChatCompletionResponse;
+import com.hao.chatgpt.domain.chat.Message;
+import com.hao.chatgpt.session.Configuration;
+import com.hao.chatgpt.session.OpenAiSession;
+import com.hao.chatgpt.session.OpenAiSessionFactory;
+import com.hao.chatgpt.session.defaults.DefaultOpenAiSessionFactory;
 import com.hao.domain.ResponseResult;
+
 import com.hao.domain.entity.Comment;
-import com.hao.domain.vo.ConditionVO;
 import com.hao.mapper.ArticleMapper;
 import com.hao.mapper.RoleMapper;
 import com.hao.mapper.TagMapper;
-import com.hao.mapper.UserInfoMapper;
 import com.hao.service.*;
-import com.hao.service.impl.ArticleServiceImpl;
 import com.hao.service.impl.UploadServiceImpl;
+
+import okhttp3.sse.EventSource;
+import okhttp3.sse.EventSourceListener;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.util.MimeTypeUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 @SpringBootTest
 public class test {
@@ -135,6 +136,7 @@ public class test {
 
     @Autowired
     private UserService userService;
+
     @Test
     public void userInfoTest() {
 //        System.out.println(userService.userInfoById);
@@ -142,9 +144,9 @@ public class test {
     }
 
 
-
     @Autowired
     private UploadServiceImpl uploadService;
+
     @Test
     public void urltest() {
 //        ResponseResult responseResult = uploadService.uploadRandomImg();
@@ -169,5 +171,49 @@ public class test {
 //        tempFile.delete();
 //        System.out.println(multipartFile);
 
+    }
+
+    @Test
+    public void chatTest() throws JsonProcessingException {
+        // 1. 配置文件
+        Configuration configuration = new Configuration();
+        configuration.setApiHost("https://api.openai-hk.com/");
+        configuration.setApiKey("hk-0z2x6v1000003982141ce37857fefa8be947f068eb398d8b");
+
+        // 2. 会话工厂
+        OpenAiSessionFactory factory = new DefaultOpenAiSessionFactory(configuration);
+        OpenAiSession openAiSession = factory.openSession();
+
+        System.out.println("我是 OpenAI ChatGPT，请输入你的问题：");
+
+        ChatCompletionRequest chatCompletion = ChatCompletionRequest
+                .builder()
+//                .stream(false)
+                .messages(new ArrayList<>())
+                .model(ChatCompletionRequest.Model.GPT_3_5_TURBO.getCode())
+                .user("testUser02")
+                .build();
+
+        // 3. 等待输入
+//        Scanner scanner = new Scanner(System.in);
+//        while (scanner.hasNextLine()) {
+//            String text = scanner.nextLine();
+        String text = "你好";
+        chatCompletion.getMessages().add(Message.builder().role(Constants.Role.USER).content(text).build());
+        ChatCompletionResponse chatCompletionResponse = openAiSession.completions(chatCompletion);
+//        chatCompletion.getMessages().add(Message.builder().role(Constants.Role.USER).content(chatCompletionResponse.getChoices().get(0).getMessage().getContent()).build());
+        // 输出结果
+        System.out.println(chatCompletionResponse.getChoices().get(0).getMessage().getContent());
+//        openAiSession.chatCompletions(chatCompletion, new EventSourceListener() {
+//            @Override
+//            public void onEvent(EventSource eventSource, String id, String type, String data) {
+//                System.out.println(data);
+//                super.onEvent(eventSource, id, type, data);
+//
+//            }
+//        });
+//        System.out.println("请输入你的问题：");
+
+//        }
     }
 }
