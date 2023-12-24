@@ -14,8 +14,10 @@ import com.hao.chatgpt.session.OpenAiSessionFactory;
 import com.hao.chatgpt.session.defaults.DefaultOpenAiSessionFactory;
 import com.hao.domain.ResponseResult;
 
+import com.hao.domain.entity.Askprompt;
 import com.hao.domain.entity.Comment;
 import com.hao.mapper.ArticleMapper;
+import com.hao.mapper.AskpromptMapper;
 import com.hao.mapper.RoleMapper;
 import com.hao.mapper.TagMapper;
 import com.hao.service.*;
@@ -188,10 +190,10 @@ public class test {
 
         ChatCompletionRequest chatCompletion = ChatCompletionRequest
                 .builder()
-//                .stream(false)
+                .stream(true)
                 .messages(new ArrayList<>())
                 .model(ChatCompletionRequest.Model.GPT_3_5_TURBO.getCode())
-                .user("testUser02")
+                .user("testUser01")
                 .build();
 
         // 3. 等待输入
@@ -200,20 +202,34 @@ public class test {
 //            String text = scanner.nextLine();
         String text = "你好";
         chatCompletion.getMessages().add(Message.builder().role(Constants.Role.USER).content(text).build());
-        ChatCompletionResponse chatCompletionResponse = openAiSession.completions(chatCompletion);
+//        ChatCompletionResponse chatCompletionResponse = openAiSession.completions(chatCompletion);
 //        chatCompletion.getMessages().add(Message.builder().role(Constants.Role.USER).content(chatCompletionResponse.getChoices().get(0).getMessage().getContent()).build());
         // 输出结果
-        System.out.println(chatCompletionResponse.getChoices().get(0).getMessage().getContent());
-//        openAiSession.chatCompletions(chatCompletion, new EventSourceListener() {
-//            @Override
-//            public void onEvent(EventSource eventSource, String id, String type, String data) {
-//                System.out.println(data);
-//                super.onEvent(eventSource, id, type, data);
-//
-//            }
-//        });
+//        System.out.println(chatCompletionResponse.getChoices().get(0).getMessage().getContent());
+        openAiSession.chatCompletions(chatCompletion, new EventSourceListener() {
+            @Override
+            public void onEvent(EventSource eventSource, String id, String type, String data) {
+                System.out.println(id);
+                System.out.println(type);
+                System.out.println(data);
+                super.onEvent(eventSource, id, type, data);
+
+            }
+        });
 //        System.out.println("请输入你的问题：");
 
 //        }
+    }
+
+    @Autowired
+    private AskpromptService askpromptService;
+    @Autowired
+    private AskpromptMapper askpromptMapper;
+    @Test
+    public void testPrompt(){
+        Askprompt build = Askprompt.builder().content("tets").description("test").name("test").build();
+//        askpromptService.save(build);
+        askpromptMapper.insert(build);
+
     }
 }

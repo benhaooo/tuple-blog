@@ -17,7 +17,6 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.NettyRuntime;
 import io.netty.util.concurrent.Future;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -26,7 +25,7 @@ import javax.annotation.PreDestroy;
 @Configuration
 //@Component
 public class NettyWebSocketServer {
-    public static final int WEB_SOCKET_PORT = 9967;
+    public static final int WEB_SOCKET_PORT = 9956;
     public static final NettyWebSocketServerHandler NETTY_WEB_SOCKET_SERVER_HANDLER = new NettyWebSocketServerHandler();
     // 创建线程池执行器
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);

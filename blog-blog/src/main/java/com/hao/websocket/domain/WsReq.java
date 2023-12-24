@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WsReq {
-    private String session_id;
+    private String model;
+    private String message_id;
+    private Integer maxTokens;
     private List<Message> messages;
 }

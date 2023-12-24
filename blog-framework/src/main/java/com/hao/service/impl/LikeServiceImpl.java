@@ -9,7 +9,6 @@ import com.hao.mapper.LikeMapper;
 import com.hao.service.LikeService;
 import com.hao.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,11 +22,11 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Like> implements Li
 //    toggle
     @Override
     public ResponseResult pointLike(Long article_id) {
-        LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticle_id, article_id).eq(Like::getCreateBy, SecurityUtils.getUserId());
+        LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticleId, article_id).eq(Like::getCreateBy, SecurityUtils.getUserId());
         int count = likeMapper.selectCount(eq);
 
         if(count==0){
-            likeMapper.insert(Like.builder().article_id(article_id).build());
+            likeMapper.insert(Like.builder().articleId(article_id).build());
             return ResponseResult.setAppHttpCodeEnum(AppHttpCodeEnum.POINT_LIKE);
 
         }else{

@@ -34,7 +34,7 @@ public class ChatCompletionRequest implements Serializable {
     private List<String> stop;
     /** 输出字符串限制；0 ~ 4096 */
     @JsonProperty("max_tokens")
-    private Integer maxTokens = 2048;
+    private Integer maxTokens = 4096;
     /** 频率惩罚；降低模型重复同一行的可能性 */
     @JsonProperty("frequency_penalty")
     private double frequencyPenalty = 0;

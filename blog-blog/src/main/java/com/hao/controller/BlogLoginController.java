@@ -1,6 +1,7 @@
 package com.hao.controller;
 
 import com.hao.domain.ResponseResult;
+import com.hao.domain.dto.PasswordDTO;
 import com.hao.domain.entity.LoginUser;
 import com.hao.domain.entity.Menu;
 import com.hao.domain.entity.User;
@@ -74,6 +75,12 @@ public class BlogLoginController {
         userInfoVo.setPermissions(roleKeyList);
 
         return ResponseResult.okResult(userInfoVo);
+    }
+
+
+    @PostMapping("/changePwd")
+    public ResponseResult changePwd(@RequestBody PasswordDTO passwordDTO){
+        return blogLoginService.changePwd(passwordDTO);
     }
 
 

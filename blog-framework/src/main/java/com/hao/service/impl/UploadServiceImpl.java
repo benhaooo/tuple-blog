@@ -21,7 +21,7 @@ import java.util.*;
 @Service("uploadService")
 public class UploadServiceImpl implements UploadService {
     @Override
-    public ResponseResult uploadImg(MultipartFile img) {
+    public String uploadImg(MultipartFile img) {
         //获取原始文件名
         String originalFilename = img.getOriginalFilename();
         //根据后缀判断文件类型
@@ -53,7 +53,7 @@ public class UploadServiceImpl implements UploadService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ResponseResult.okResult(url);
+        return url;
     }
 
 

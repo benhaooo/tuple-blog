@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hao.constants.SystemConstants;
 import com.hao.domain.ResponseResult;
+import com.hao.domain.dto.PasswordDTO;
 import com.hao.domain.entity.LoginUser;
 import com.hao.domain.entity.User;
 import com.hao.domain.entity.UserInfo;
@@ -18,6 +19,7 @@ import com.hao.service.BlogLoginService;
 import com.hao.utils.BeanCopyUtils;
 import com.hao.utils.JwtUtil;
 import com.hao.utils.RedisCache;
+import com.hao.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -120,5 +122,17 @@ public class BlogLoginServiceImpl implements BlogLoginService {
 
         return ResponseResult.okResult();
 
+    }
+
+    @Override
+    public ResponseResult changePwd(PasswordDTO passwordDTO) {
+        Long userId = SecurityUtils.getUserId();
+        User user = userMapper.selectById(userId);
+        if (passwordEncoder.matches(passwordDTO.getOldPwd(),user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(passwordDTO.getNewPwd()));
+            userMapper.updateById(user);
+            return ResponseResult.okResult();
+        }
+        return null;
     }
 }

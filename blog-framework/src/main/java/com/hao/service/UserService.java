@@ -5,6 +5,7 @@ import com.hao.domain.ResponseResult;
 import com.hao.domain.entity.User;
 import com.hao.domain.entity.UserInfo;
 import com.hao.domain.vo.UserInfoVo;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -24,4 +25,8 @@ public interface UserService extends IService<User> {
     ResponseResult userInfoById();
 
     ResponseResult updateUserInfoById(UserInfo userInfo);
+
+    ResponseResult updateUserAva(MultipartFile img);
+
+    ResponseResult getMyLikeArticles();
 }

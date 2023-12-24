@@ -13,7 +13,7 @@ public class UploadController {
     private UploadService uploadService;
 
     @PostMapping("/uploadImg")
-    public ResponseResult uploadImg(MultipartFile img){
-        return uploadService.uploadImg(img);
+    public ResponseResult uploadImg(MultipartFile img) {
+        return ResponseResult.okResult(uploadService.uploadImg(img));
     }
 }

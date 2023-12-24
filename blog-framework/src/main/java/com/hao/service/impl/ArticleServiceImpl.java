@@ -115,8 +115,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleDTO.setViewCount(redisCache.incrementMapV(SystemConstants.REDIS_ARTICLE_VIEW_COUNT, String.valueOf(id), 1l));
         //当前用户是否点赞
         Long userId = SecurityUtils.getUserId();
-        if(Objects.nonNull(userId)){
-            LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticle_id, id).eq(Like::getCreateBy, userId);
+        if (Objects.nonNull(userId)) {
+            LambdaQueryWrapper<Like> eq = new LambdaQueryWrapper<Like>().eq(Like::getArticleId, id).eq(Like::getCreateBy, userId);
             if (likeMapper.selectCount(eq) != 0) {
                 articleDTO.setIsLiked(true);
             }
@@ -127,7 +127,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public ResponseResult getAdminArticleById(Long id) {
         Article article = articleMapper.selectById(id);
-        return ResponseResult.okResult(article);
+        LambdaQueryWrapper<ArticleTag> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ArticleTag::getArticleId, article.getId());
+
+        List<ArticleTag> articleTags = articleTagMapper.selectList(lambdaQueryWrapper);
+        List<Long> tagList = articleTags.stream()
+                .map(ArticleTag::getTagId)
+                .collect(Collectors.toList());
+        ArticleDetailDTO articleDetailDTO = BeanCopyUtils.copyBean(article, ArticleDetailDTO.class);
+        articleDetailDTO.setTagList(tagList);
+        return ResponseResult.okResult(articleDetailDTO);
     }
 
 
@@ -139,8 +148,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult listAdminArticleByCondition(ConditionVO condition) {
-        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
-        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
+        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
+        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
         PageVo pageVo = new PageVo(articleList, count);
 
         return ResponseResult.okResult(pageVo);
@@ -155,8 +164,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ResponseResult listArticleByCondition(ConditionVO condition) {
-        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
-        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(),PageUtils.getSize(),condition);
+        List<ArticlePreviewDTO> articleList = articleMapper.listArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
+        Long count = articleMapper.countArticleByCondition(PageUtils.getLimitCurrent(), PageUtils.getSize(), condition);
         PageVo pageVo = new PageVo(articleList, count);
         return ResponseResult.okResult(pageVo);
     }

@@ -6,6 +6,7 @@ import com.hao.domain.vo.UserInfoVo;
 import com.hao.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/user")
@@ -24,6 +25,11 @@ public class UserController {
     public  ResponseResult updateUserInfo(@RequestBody UserInfoVo userInfoVo){
      return userService.updateUserInfo(userInfoVo);
     }
+
+    @PostMapping("/update/ava")
+    public ResponseResult updateUserAva(MultipartFile img){
+        return userService.updateUserAva(img);
+    }
     @GetMapping("/del")
     public  ResponseResult delUser(String id){
         return userService.delUser(id);
@@ -39,5 +45,11 @@ public class UserController {
     public ResponseResult updateUserInfoDetail(@RequestBody UserInfo userInfo){
         return userService.updateUserInfoById(userInfo);
     }
+
+    @GetMapping("/mylike")
+    public ResponseResult getMyLikeArticles(){
+        return userService.getMyLikeArticles();
+    }
+
 
 }

@@ -1,7 +1,6 @@
 package com.hao;
 
 
-import com.hao.domain.ResponseResult;
 import com.hao.domain.vo.ArticleVo;
 import com.hao.service.ArticleService;
 import com.hao.service.UploadService;
